@@ -19,7 +19,7 @@
 
 ## R4 — Route classifier
 
-- **Decision**: Heuristic score from length, reasoning keywords (prove, design, analyze, step-by-step, trade-off…), code fences, and count of questions. Score → `easy` (<0.33) / `medium` (<0.66) / `hard`.
+- **Decision**: Heuristic score from length, reasoning keywords (prove, design, analyze, step-by-step, trade-off…), code fences, and count of questions. Score → `easy` (<0.30) / `medium` (<0.60) / `hard`.
 - **Alternatives**: embedding/semantic classifier (vLLM semantic-router style) — the natural 002+ upgrade; out of scope for an offline, dependency-light demo.
 
 ## R5 — Baseline cost

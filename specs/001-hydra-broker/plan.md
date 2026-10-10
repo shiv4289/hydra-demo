@@ -71,6 +71,7 @@ src/hydra/
 ├── config.py          # Pydantic config models + load_config()
 ├── difficulty.py      # heuristic prompt difficulty classifier
 ├── backends.py        # Backend protocol, MockBackend, OpenAIBackend
+├── prompts.py         # judge + aggregator prompts (shared by real and mock)
 ├── trace.py           # CallRecord, DecisionTrace, cost math
 ├── quality.py         # QualityCheck protocol, JudgeCheck
 ├── strategies/
