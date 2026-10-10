@@ -1,0 +1,28 @@
+# Default offline config: mock backends only (Constitution II).
+# Prices are illustrative USD per 1K tokens.
+
+baseline: large            # "what if we always used the strongest model?"
+mock_time_scale: 1.0       # 0.1 = 10x faster mocks (tests use this)
+
+backends:
+  - { name: small,  kind: mock, skill: 0.45, latency_ms: 120,  price_in: 0.0001, price_out: 0.0004 }
+  - { name: medium, kind: mock, skill: 0.70, latency_ms: 300,  price_in: 0.0010, price_out: 0.0030 }
+  - { name: large,  kind: mock, skill: 0.95, latency_ms: 800,  price_in: 0.0050, price_out: 0.0150 }
+  - { name: judge,  kind: mock, skill: 0.60, latency_ms: 80,   price_in: 0.0001, price_out: 0.0004 }
+
+strategies:
+  hydra-route:
+    kind: route
+    tiers: { easy: small, medium: medium, hard: large }
+
+  hydra-cascade:
+    kind: cascade
+    steps: [small, medium, large]
+    judge: judge
+    threshold: 0.7
+
+  hydra-fusion:
+    kind: fusion
+    panel: [small, medium, large]
+    aggregator: large
+    # quorum: 2   # default = majority of panel

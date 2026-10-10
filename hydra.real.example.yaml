@@ -1,0 +1,41 @@
+# Example: real OpenAI-compatible backends (vLLM / Ollama / hosted).
+# Run with: HYDRA_CONFIG=hydra.real.example.yaml uvicorn hydra.api:app
+# Mix freely with mock backends.
+
+baseline: big
+
+backends:
+  - name: tiny
+    kind: openai
+    base_url: http://localhost:11434/v1        # Ollama
+    model: qwen2.5:1.5b
+    price_in: 0.0
+    price_out: 0.0
+  - name: mid
+    kind: openai
+    base_url: http://localhost:8000/v1         # vLLM
+    model: meta-llama/Llama-3.1-8B-Instruct
+    price_in: 0.0002
+    price_out: 0.0006
+  - name: big
+    kind: openai
+    base_url: https://api.openai.com/v1
+    model: gpt-4o
+    api_key_env: OPENAI_API_KEY
+    price_in: 0.0025
+    price_out: 0.0100
+    timeout_s: 60
+
+strategies:
+  hydra-route:
+    kind: route
+    tiers: { easy: tiny, medium: mid, hard: big }
+  hydra-cascade:
+    kind: cascade
+    steps: [tiny, mid, big]
+    judge: mid
+    threshold: 0.7
+  hydra-fusion:
+    kind: fusion
+    panel: [tiny, mid, big]
+    aggregator: big
