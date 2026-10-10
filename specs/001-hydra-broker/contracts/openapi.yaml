@@ -1,0 +1,95 @@
+openapi: 3.1.0
+info:
+  title: Hydra Broker (OpenAI-compatible subset)
+  version: 0.1.0
+paths:
+  /v1/models:
+    get:
+      summary: List backends and strategies addressable via `model`
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [object, data]
+                properties:
+                  object: { const: list }
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      required: [id, object, owned_by]
+                      properties:
+                        id: { type: string }
+                        object: { const: model }
+                        owned_by: { type: string, description: "hydra-strategy:<kind> or hydra-backend:<kind>" }
+  /v1/chat/completions:
+    post:
+      summary: Chat completion via a backend or a broker strategy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [model, messages]
+              properties:
+                model: { type: string }
+                messages:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: object
+                    required: [role, content]
+                    properties:
+                      role: { enum: [system, user, assistant] }
+                      content: { type: string }
+                temperature: { type: number }
+                max_tokens: { type: integer }
+                stream: { type: boolean, description: "Must be false or absent" }
+      responses:
+        "200":
+          description: OK
+          headers:
+            x-hydra-strategy: { schema: { type: string } }
+            x-hydra-backends: { schema: { type: string }, description: "comma-separated backends called, in order" }
+            x-hydra-selected: { schema: { type: string } }
+            x-hydra-cost-usd: { schema: { type: string } }
+            x-hydra-baseline-usd: { schema: { type: string } }
+            x-hydra-savings-pct: { schema: { type: string } }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [id, object, created, model, choices, usage, hydra]
+                properties:
+                  id: { type: string }
+                  object: { const: chat.completion }
+                  created: { type: integer }
+                  model: { type: string }
+                  choices:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        index: { type: integer }
+                        message:
+                          type: object
+                          properties:
+                            role: { const: assistant }
+                            content: { type: string }
+                        finish_reason: { type: string }
+                  usage:
+                    type: object
+                    properties:
+                      prompt_tokens: { type: integer }
+                      completion_tokens: { type: integer }
+                      total_tokens: { type: integer }
+                  hydra:
+                    description: DecisionTrace (see data-model.md)
+                    type: object
+        "400": { description: "Invalid request (empty messages, stream=true)" }
+        "404": { description: "Unknown model; error message lists valid names" }
+        "502": { description: "Strategy failed (e.g. fusion below quorum)" }
